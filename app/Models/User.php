@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -18,7 +19,8 @@ class User extends Authenticatable
      * @var string[]
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
     ];
@@ -40,5 +42,42 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
+
+     /**
+     * The attributes that should be appended.
+     *
+     * @var array
+     */
+    protected $appends = [
+        'full_name'
+    ];
+
+    /******************************************************
+     * Relationships
+     ******************************************************/
+
+    /**
+     * Get the notes for a user.
+     */
+    public function notes()
+    {
+        return $this->hasMany('App\Models\Note');
+    }
+
+     /******************************************************
+     * Attributes
+     ******************************************************/
+
+    /**
+     * Get the full name of a user.
+     */
+    public function getFullNameAttribute()
+    {
+        return implode(' ', array_filter([ucfirst($this->first_name, ucfirst($this->last_name))]));
+    }
+
 }
