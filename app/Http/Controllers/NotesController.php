@@ -5,22 +5,24 @@ namespace App\Http\Controllers;
 use App\Models\Note;
 use App\Traits\PaginatesResponseTrait;
 use Illuminate\Http\Request;
-use App\Http\Requests\CreateNoteApiRequest;
-use App\Http\Requests\UpdateNoteApiRequest;
+use App\Http\Requests\NoteApiRequest;
+use Illuminate\Foundation\Validation\ValidatesRequests;
 
 class NotesController extends Controller
 {
+    use PaginatesResponseTrait, ValidatesRequests;
+    
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $query = Note::thisUser();
 
         if($request->filled('title')) {
-            $query = $query->where('title', $request->first_name);
+            $query = $query->where('title', $request->title);
         }
 
         if($request->filled('created_at')) {
@@ -57,8 +59,16 @@ class NotesController extends Controller
      */
     public function show($id)
     {
-        $note = Note::findOrFail($id);
+        $note = Note::find($id);
         
+        if (!$note) {
+            return $this->noteNotFound($id);
+        }
+
+        if (auth()->user()->id != $note->user_id) {
+            return $this->userNotAuthorized();
+        }
+
         return response()->json([
             'data' => $note,
         ]);
@@ -73,15 +83,14 @@ class NotesController extends Controller
      */
     public function update(NoteApiRequest $request, $id)
     {
-        $note = Note::findOrFail($id);
+        $note = Note::find($id);
 
-        if (auth()->user()->id != $note->id) {
-            return response()->json([
-                'message' => 'Authorization Error',
-                'errors' => [
-                    'user_id' => ['This user does not have permission to update this note.']
-                ]
-            ], 401);
+        if (!$note) {
+            return $this->noteNotFound($id);
+        }
+
+        if (auth()->user()->id != $note->user_id) {
+            return $this->userNotAuthorized();
         }
 
         $note->title = $request->title;
@@ -103,8 +112,43 @@ class NotesController extends Controller
     public function destroy($id)
     {
         $note = Note::findOrFail($id);
+
+        if (!$note) {
+           return $this->noteNotFound($id);
+        }
+
+        if (auth()->user()->id != $note->user_id) {
+            return $this->userNotAuthorized();
+        }
+
         $note->delete();
         
-        return reponse(json_encode('Success'), 200);
+        return response()->json([
+            'success' => true
+        ]);
+    }
+
+    // Note not found response
+    private function noteNotFound($id) {
+
+        return response()->json([
+            'message' => 'Not Found',
+            'errors' => [
+                'id' => ['A note with ID '.$id.' has not been found.']
+            ]
+        ], 404);
+
+    }
+
+    // Not authorized response
+    private function userNotAuthorized() {
+
+        return response()->json([
+            'message' => 'Authorization Error',
+            'errors' => [
+                'id' => ['This user does not have permission to view, updated, or delete this note.']
+            ]
+        ], 401);
+
     }
 }
