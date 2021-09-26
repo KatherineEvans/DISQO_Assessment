@@ -10,6 +10,7 @@ trait PaginatesResponseTrait
     public function returnPaginatedResponse($query, $pagination_settings)
     {
         if (!$pagination_settings) {
+
             $notes = $query->get();
 
             return response()->json([
@@ -25,11 +26,11 @@ trait PaginatesResponseTrait
             $pagination_settings = (object) $pagination_settings;
         }
 
-        $column = $pagination_settings->sortColumn ?? 'created_at';
-        $order = $pagination_settings->sortOrder ?? 'DESC';
-        $size = $pagination_settings->pageSize ?? 10;
+        $column = $pagination_settings->sort_column ?? 'created_at';
+        $order = $pagination_settings->sort_order ?? 'DESC';
+        $size = $pagination_settings->page_size ?? 10;
         $page = $pagination_settings->page ?? 1;
-
+        
         $sortable_columns = [
             'title', 
             'created_at',
@@ -65,6 +66,7 @@ trait PaginatesResponseTrait
             ];
 
         } else {
+
             Paginator::currentPageResolver( function () use ($page) {
                 return response()->json([
                     'data' => $page,
