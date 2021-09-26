@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
@@ -32,6 +33,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
+        'api_token',
         'remember_token',
     ];
 
@@ -68,7 +70,7 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\Note');
     }
 
-     /******************************************************
+    /******************************************************
      * Attributes
      ******************************************************/
 
@@ -78,6 +80,23 @@ class User extends Authenticatable
     public function getFullNameAttribute()
     {
         return implode(' ', array_filter([ucfirst($this->first_name, ucfirst($this->last_name))]));
+    }
+
+    /******************************************************
+     * Other
+     ******************************************************/
+
+    /**
+     * Generates and returns API token for user.
+     * API token is hashed and stored on the users table (api_token).
+     */
+    public function generateApiToken()
+    {
+        $apiToken = Str::random(60);
+        $this->api_token = hash('sha256', $apiToken);
+        $this->save();
+
+        return 'Bearer '.$apiToken;
     }
 
 }
