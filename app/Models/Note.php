@@ -26,7 +26,6 @@ class Note extends Model
      * @var array
      */
     protected $casts = [
-        'email_verified_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -39,7 +38,7 @@ class Note extends Model
     /**
      * Get the user for a note.
      */
-    public function notes()
+    public function user()
     {
         return $this->belongsTo('App\Models\User');
     }

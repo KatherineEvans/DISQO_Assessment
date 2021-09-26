@@ -17,7 +17,7 @@ class CreateNotesTable extends Migration
             $table->id();
             $table->bigInteger('user_id');
             $table->string('title');
-            $table->text('note');
+            $table->text('note')->nullable();
             $table->timestamps();
             $table->date('deleted_at')->nullable();
         });
