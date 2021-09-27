@@ -54,9 +54,9 @@ The user has two options for testing out the API:
 
 Please start by generating a test user and obtaining a Bearer token:
 ```bash
-php artisan generate:api_test_user {example email}
+php artisan generate:api_test_user
 
-# Command will create a new user and return a Bearer token
+# Command will create and return a new randomized user and a Bearer token. Please KEEP your bearer token!
 ```
 
 ## cURL

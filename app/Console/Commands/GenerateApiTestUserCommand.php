@@ -13,7 +13,7 @@ class GenerateApiTestUserCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'generate:api_test_user {email}';
+    protected $signature = 'generate:api_test_user';
 
     /**
      * The console command description.
@@ -39,14 +39,24 @@ class GenerateApiTestUserCommand extends Command
      */
     public function handle()
     {
-        $user = new User;
-        $user->first_name = "Test";
-        $user->last_name = "User";
-        $user->email = $this->argument('email');
-        $user->password = Str::random(16);
+        try {
+            $user = new User;
+            $user->first_name = "Test";
+            $user->last_name = "User";
+            $user->email = 'test_user'.Str::random(10).'@example.com';
+            $user->password = Str::random(16);
 
-        $user->save();
+            $user->save();
 
-        $this->info($user->generateApiToken());
+            $this->info($user);
+            $this->info('');
+            $this->info('************************');
+            $this->info($user->generateApiToken());
+            $this->info('************************');
+
+        } catch (\Exception $e) {
+            $this->info('User creation failed, please try again'); 
+        }
+
     }
 }
